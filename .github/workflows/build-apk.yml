@@ -1,0 +1,105 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: কনটেন্ট যাচাই (সংখ্যা, বর্ণ, দোয়া, ১৫ দিনের রুটিন)
+        run: node tools/check_data.js
+
+      # সূরা ফাতিহা ও ইখলাসের তিলাওয়াত APK-র ভেতরে ঢুকিয়ে দিই, যাতে অফলাইনে শোনা যায়।
+      # শিশুদের শেখানোর জন্য প্রথমে শায়খ হুসারীর "মুআল্লিম" (শিক্ষক) তিলাওয়াত চেষ্টা করি।
+      - name: Download Quran recitation (everyayah.com)
+        run: |
+          OUT=app/src/main/assets/audio
+          FILES="001001 001002 001003 001004 001005 001006 001007 112001 112002 112003 112004"
+          for R in Husary_Muallim_128kbps Minshawy_Teacher_128kbps Alafasy_128kbps Alafasy_64kbps; do
+            rm -rf /tmp/aud && mkdir -p /tmp/aud && ok=1
+            for f in $FILES; do
+              if ! curl -fsSL --retry 3 --max-time 60 -o "/tmp/aud/$f.mp3" "https://everyayah.com/data/$R/$f.mp3"; then ok=0; break; fi
+              if ! file "/tmp/aud/$f.mp3" | grep -qiE 'audio|MPEG|ID3'; then ok=0; break; fi
+            done
+            if [ "$ok" = 1 ]; then
+              cp /tmp/aud/*.mp3 "$OUT/"
+              echo "$R" > "$OUT/reciter.txt"
+              echo "তিলাওয়াত যোগ হলো: $R"
+              break
+            fi
+            echo "::warning::$R পাওয়া গেল না, পরেরটা চেষ্টা করছি"
+          done
+          ls -la "$OUT"
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 secret নেই — স্থায়ী চাবি ছাড়া রিলিজ বানানো হবে না (নইলে আপডেট ইনস্টল হবে না)"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Rename APK and show signing certificate
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk sonamoni-pathshala.apk
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          "$APKSIGNER" verify --print-certs sonamoni-pathshala.apk | grep -i "SHA-256"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: sonamoni-pathshala-apk
+          path: sonamoni-pathshala.apk
+
+      - name: Read version
+        id: ver
+        run: |
+          V=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "name=$V" >> "$GITHUB_OUTPUT"
+          cp sonamoni-pathshala.apk "sonamoni-pathshala-v$V.apk"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.ver.outputs.name }}
+        run: |
+          NOTES="সোনামণির পাঠশালা v$V — commit ${GITHUB_SHA::7} থেকে তৈরি।
+          নিচের APK ফাইলটা ডাউনলোড করে ফোনে ইনস্টল করুন (Android 8 বা নতুন)।
+          ইন্টারনেট লাগে না। উচ্চারণ শোনার জন্য ফোনে Google Text-to-Speech-এ বাংলা ভয়েস থাকা দরকার।"
+          if gh release view "v$V" >/dev/null 2>&1; then
+            gh release upload "v$V" "sonamoni-pathshala-v$V.apk" --clobber
+            gh release edit "v$V" --notes "$NOTES"
+          else
+            gh release create "v$V" "sonamoni-pathshala-v$V.apk" --title "সোনামণির পাঠশালা v$V" --notes "$NOTES"
+          fi

@@ -14,7 +14,7 @@
     return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
   };
   const defaults = () => ({
-    v: 1, name: '', start: todayStr(), lang: 'bn', rate: 0.8, digits: 'en', stars: 0, onboarded: false,
+    v: 1, name: '', start: todayStr(), lang: 'bn', rate: 0.8, stars: 0, onboarded: false,
     stats: {}, tasks: {}, duaDone: {}, clean: {}, tests: [], oral: {}, written: {},
   });
   let S;
@@ -154,23 +154,23 @@
   // সহায়ক: বর্ণ/সংখ্যা দেখানো, নাম, অগ্রগতি
   // =====================================================================
   const itemsOf = (set) => SETS[set].items;
+  const isNum = (set) => set === 'num' || set === 'numen';
   function disp(set, it) {
-    if (set === 'num') return S.digits === 'bn' ? it.bnDigit : it.g;
+    if (set === 'num') return it.bnDigit;
     return it.g;
   }
   function sayOf(set, it) {
-    if (set === 'num') return S.lang === 'en' ? it.sayEn : it.say;
     if (set === 'ar' && Speech.status('ar') !== 1) return it.sayBn;
     return it.say;
   }
   function nameOf(set, it) {
-    if (set === 'num') return S.lang === 'en' ? it.en : it.name;
     return it.name;
   }
   function rangeLabel(set, r) {
     const it = itemsOf(set);
     if (set === 'ar') return `${it[r[0]].name.replace(/\s*\(.*\)/, '')}–${it[r[1]].name.replace(/\s*\(.*\)/, '')}`;
-    if (set === 'num') return `${N(it[r[0]].n)}–${N(it[r[1]].n)}`;
+    if (set === 'num') return `${it[r[0]].bnDigit}–${it[r[1]].bnDigit}`;
+    if (set === 'numen') return `${it[r[0]].g}–${it[r[1]].g}`;
     return `${it[r[0]].g}–${it[r[1]].g}`;
   }
   const setTitle = (set) => L(SETS[set].title, SETS[set].en);
@@ -287,7 +287,7 @@
     }
     const left = daysLeft();
     const tiles = [
-      ['num', 't1'], ['en', 't2'], ['bn', 't3'], ['ar', 't4'],
+      ['num', 't1'], ['numen', 't7'], ['en', 't2'], ['bn', 't3'], ['ar', 't4'],
     ].map(([s, c]) => `<button class="tile ${c}" onclick="App.go('subject',{set:'${s}'})">
         <span class="big ${s === 'ar' ? 'ar' : ''}">${SETS[s].icon}</span><span class="nm">${setTitle(s)}</span>
         <div class="bar l"><i style="width:${Math.round(setProgress(s) * 100)}%"></i></div></button>`).join('');
@@ -335,10 +335,10 @@
       <span class="chk">${done ? '✓' : ''}</span></button>`;
   }
   function overallReady() {
-    const sets = ['num', 'en', 'bn', 'ar'].map(setProgress);
+    const sets = ['num', 'numen', 'en', 'bn', 'ar'].map(setProgress);
     const dua = D.duas.filter((d) => S.duaDone[d.id]).length / D.duas.length;
     const plan = Object.keys(S.tasks).length / D.plan.reduce((a, d) => a + d.length, 0);
-    return Math.min(1, (sets.reduce((a, b) => a + b, 0) + dua + plan) / 6);
+    return Math.min(1, (sets.reduce((a, b) => a + b, 0) + dua + plan) / 7);
   }
 
   function onboard() {
@@ -370,7 +370,7 @@
     const rid = r.join(',');
     const chip = (rr, label) => `<button class="chip ${rr.join(',') === rid ? 'on' : ''}" onclick="App.subRange([${rr}])">${label}</button>`;
     const groupChips = (S1.groups || []).map((g) => chip(g.r, g.t)).join('');
-    const hasWords = set !== 'num';
+    const hasWords = !isNum(set);
     const m = (e, t, s, act) => `<button class="mode" onclick="${act}"><span class="e">${e}</span><b>${t}</b><small>${s}</small></button>`;
     const R = `[${r}]`;
     return `${topbar(setTitle(set))}
@@ -379,7 +379,7 @@
       <div class="modes">
         ${m('📖', L('শিখি', 'Learn'), L('সোজা ক্রমে দেখি ও শুনি', 'See & hear in order'), `App.go('learn',{set:'${set}',r:${R}})`)}
         ${m('🔲', L('সব একসাথে', 'All at once'), L('ছুঁয়ে শুনি', 'Tap to hear'), `App.go('grid',{set:'${set}',r:${R}})`)}
-        ${m('🔀', L('উল্টাপাল্টা চিনি', 'Mixed-up quiz'), L('শুনে/দেখে ঠিকটা ধরি', 'Find the right one'), `App.go('quiz',{set:'${set}',r:${R},mode:'mix'})`)}
+        ${m('🔀', L('উল্টাপাল্টা চিনি', 'Mixed-up quiz'), (isNum(set) ? L('শুনে ঠিক সংখ্যাটা ছুঁই', 'Hear it, tap the number') : L('শুনে/দেখে ঠিকটা ধরি', 'Find the right one')), `App.go('quiz',{set:'${set}',r:${R},mode:'mix'})`)}
         ${m('➡️', L('সোজা মুখস্থ', 'In order'), L('পরেরটা কী? আগেরটা কী?', "What's next?"), `App.go('quiz',{set:'${set}',r:${R},mode:'order'})`)}
         ${m('✍️', L('লিখি', 'Write'), L('আঙুল দিয়ে লেখা', 'Write with finger'), `App.go('write',{set:'${set}',r:${R}})`)}
         ${m('🎵', L('ছড়া', 'Rhymes'), L('শুনি ও বলি', 'Listen & say'), `App.go('rhyme',{set:'${set}'})`)}
@@ -395,11 +395,11 @@
   function cardHtml(set, i) {
     const it = itemsOf(set)[i];
     let body = '';
-    if (set === 'num') {
+    if (isNum(set)) {
       const tens = Math.floor(it.n / 10); const ones = it.n % 10;
       body = `<div class="glyph ${it.n > 9 ? 'num2' : ''}">${disp(set, it)}</div>
-        <div class="gname">${it.name}</div><div class="gsub en">${it.en}${S.digits !== 'bn' ? ' • ' + it.bnDigit : ' • ' + it.g}</div>
-        <div class="counter">${'<span class="ten">১০</span>'.repeat(tens)}${'<span class="dot"></span>'.repeat(ones)}</div>`;
+        <div class="gname ${set === 'numen' ? 'en' : ''}">${it.name}</div><div class="gsub">${set === 'numen' ? `${L('বাংলায়', 'In Bangla')}: ${it.bnName}` : ''}</div>
+        <div class="counter">${`<span class="ten">${set === 'numen' ? '10' : '১০'}</span>`.repeat(tens)}${'<span class="dot"></span>'.repeat(ones)}</div>`;
     } else if (set === 'en') {
       body = `<div class="glyph">${it.g}<span class="sm">${it.small}</span></div>
         <div class="words">${it.words.map((w) => `<div class="word"><span class="e">${w.e}</span><b class="en">${w.w}</b><small>${w.m}</small></div>`).join('')}</div>
@@ -469,7 +469,7 @@
     return `${topbar(setTitle(set))}
     <div class="page">
       <p class="mute center">${L('যেকোনোটা ছুঁয়ে দাও, শুনতে পাবে। ✓ চিহ্ন মানে শেখা হয়েছে।', 'Tap any to hear it. ✓ means learnt.')}</p>
-      <div class="grid ${set === 'num' || set === 'en' ? '' : 'c4'}">${cells}</div>
+      <div class="grid ${isNum(set) || set === 'en' ? '' : 'c4'}">${cells}</div>
       <div class="btns" style="margin-top:14px"><button class="btn sec2" onclick="App.gridPlay('${set}',${r[0]},${r[1]})">▶ ${L('সোজা ক্রমে শোনো', 'Play in order')}</button></div>
     </div>`;
   };
@@ -489,7 +489,7 @@
   const glyphOpt = (set, i, correct) => ({ html: disp(set, itemsOf(set)[i]), cls: set === 'ar' ? 'ar' : '', ok: correct, item: i });
   const canHear = (set) => {
     if (!Speech.has()) return true;
-    const lang = set === 'en' ? 'en' : set === 'num' ? (S.lang === 'en' ? 'en' : 'bn') : set === 'ar' ? 'ar' : 'bn';
+    const lang = set === 'en' || set === 'numen' ? 'en' : set === 'ar' ? 'ar' : 'bn';
     return Speech.status(lang) === 1 || (set === 'ar' && Speech.status('bn') === 1);
   };
 
@@ -504,12 +504,7 @@
   }
   function qSee(set, i, pool) {
     const it = itemsOf(set)[i];
-    if (set === 'num') {
-      const ds = distractIdx(set, i, 3, pool);
-      const o = (x, ok) => ({ html: nameOf(set, itemsOf(set)[x]), cls: 'txt', ok, item: x });
-      return { set, item: i, prompt: L('এই সংখ্যাটার নাম কী?', 'What is this number?'), show: disp(set, it),
-        opts: shuffle([o(i, true)].concat(ds.map((x) => o(x, false)))) };
-    }
+    if (isNum(set)) return qHear(set, i, pool); // সংখ্যায় শুধু: শুনে ঠিক সংখ্যা বাছাই
     if (set === 'en') {
       const ds = distractIdx(set, i, 3, pool);
       const o = (x, ok) => ({ html: itemsOf(set)[x].small, cls: 'en', ok, item: x });
@@ -648,9 +643,9 @@
     if (mode === 'dua') { for (let k = 0; k < 10; k++) qs.push(qDua()); return qs; }
     if (mode === 'weak') {
       const all = [];
-      ['num', 'en', 'bn', 'ar'].forEach((s) => itemsOf(s).forEach((_, i) => { if (S.stats[statKey(s, i)]) all.push({ s, i, w: weakness(s, i) }); }));
+      ['num', 'numen', 'en', 'bn', 'ar'].forEach((s) => itemsOf(s).forEach((_, i) => { if (S.stats[statKey(s, i)]) all.push({ s, i, w: weakness(s, i) }); }));
       let pick = all.filter((x) => x.w > -1).sort((a, b) => b.w - a.w).slice(0, 12);
-      if (pick.length < 6) pick = pick.concat(shuffle(['num', 'en', 'bn', 'ar'].flatMap((s) => itemsOf(s).map((_, i) => ({ s, i })))).slice(0, 12 - pick.length));
+      if (pick.length < 6) pick = pick.concat(shuffle(['num', 'numen', 'en', 'bn', 'ar'].flatMap((s) => itemsOf(s).map((_, i) => ({ s, i })))).slice(0, 12 - pick.length));
       shuffle(pick).forEach(({ s, i }) => qs.push(rnd([qHear, qSee, qHear])(s, i)));
       return qs;
     }
@@ -941,9 +936,10 @@
   function buildTest() {
     const qs = [];
     const pickI = (s) => Math.floor(Math.random() * itemsOf(s).length);
-    qs.push(qHear('num', pickI('num')), qSee('num', pickI('num')), qOrder('num', pickI('num')), qOrder('num', pickI('num')));
+    qs.push(qHear('num', pickI('num')), qHear('num', pickI('num')), qOrder('num', pickI('num')));
+    qs.push(qHear('numen', pickI('numen')), qOrder('numen', pickI('numen')));
     qs.push(qHear('en', pickI('en')), qSee('en', pickI('en')), qWordMeaning('en', pickI('en')), qOrder('en', pickI('en')));
-    qs.push(qHear('bn', pickI('bn')), qWordOf('bn', pickI('bn')), qOrder('bn', pickI('bn')), qHear('bn', pickI('bn')));
+    qs.push(qHear('bn', pickI('bn')), qWordOf('bn', pickI('bn')), qOrder('bn', pickI('bn')));
     qs.push(qHear('ar', pickI('ar')), qSee('ar', pickI('ar')), qOrder('ar', pickI('ar')));
     qs.push(qMasala('wudu'), qMasala('namaz'), qMasala('gosol'));
     qs.push(qDua(), qDua());
@@ -989,10 +985,14 @@
   // মৌখিক পরীক্ষা (বাবা/মা নেবেন)
   // =====================================================================
   const ORAL = [
-    { id: 'num_seq', sec: 'num', t: '১ থেকে ৫০ পর্যন্ত সোজা গুনে বলো', en: 'Count 1 to 50 in order', ref: 'seq' },
-    { id: 'num_rand', sec: 'num', t: 'এলোমেলো সংখ্যা চিনে বলো', en: 'Read random numbers', flash: 'num' },
-    { id: 'num_write', sec: 'num', t: 'খাতায় ১ থেকে ৫০ সোজা লেখো', en: 'Write 1–50 on paper', ref: 'seq' },
+    { id: 'num_seq', sec: 'num', t: '১ থেকে ৫০ পর্যন্ত সোজা গুনে বলো', en: 'Count ১ to ৫০ in Bangla', ref: 'seq' },
+    { id: 'num_rand', sec: 'num', t: 'এলোমেলো বাংলা সংখ্যা চিনে বলো', en: 'Read random Bangla numbers', flash: 'num' },
+    { id: 'num_write', sec: 'num', t: 'খাতায় ১ থেকে ৫০ সোজা লেখো', en: 'Write ১–৫০ on paper', ref: 'seq' },
     { id: 'num_rhyme', sec: 'num', t: 'সংখ্যার ছড়া বলো', en: 'Say the number rhyme', rhyme: 'num' },
+    { id: 'numen_seq', sec: 'numen', t: 'ইংরেজিতে 1 থেকে 50 সোজা বলো (one, two…)', en: 'Count 1 to 50 in English', ref: 'seq' },
+    { id: 'numen_rand', sec: 'numen', t: 'এলোমেলো ইংরেজি সংখ্যা চিনে বলো', en: 'Read random English numbers', flash: 'numen' },
+    { id: 'numen_write', sec: 'numen', t: 'খাতায় 1 থেকে 50 সোজা লেখো', en: 'Write 1–50 on paper', ref: 'seq' },
+    { id: 'numen_rhyme', sec: 'numen', t: 'One, two, buckle my shoe ছড়া বলো', en: 'Say "One, two, buckle my shoe"', rhyme: 'numen' },
     { id: 'en_seq', sec: 'en', t: 'A থেকে Z সোজা বলো', en: 'Say A to Z', ref: 'seq' },
     { id: 'en_write', sec: 'en', t: 'খাতায় A থেকে Z মুখস্থ লেখো', en: 'Write A–Z on paper', ref: 'seq' },
     { id: 'en_rand', sec: 'en', t: 'এলোমেলো অক্ষর চিনে বলো', en: 'Read random letters', flash: 'en' },
@@ -1008,7 +1008,7 @@
     { id: 'ar_rand', sec: 'ar', t: 'এলোমেলো হরফ চিনে বলো', en: 'Read random letters', flash: 'ar' },
   ].concat(D.duas.map((d) => ({ id: 'dua_' + d.id, sec: 'dua', t: `${d.title} মুখস্থ বলো`, en: `Recite ${d.en}`, dua: d.id })))
     .concat(D.masala.map((m) => ({ id: 'm_' + m.id, sec: 'masala', t: `${m.title} কয়টি ও কী কী বলো`, en: `${m.en}: how many and what`, masala: m.id })));
-  const ORAL_SEC = { num: ['🔢', 'সংখ্যা', 'Numbers'], en: ['🔤', 'ইংরেজি', 'English'], bn: ['অ', 'বাংলা', 'Bangla'], ar: ['ا', 'আরবি', 'Arabic'], dua: ['🤲', 'দোয়া-কালাম', 'Duas'], masala: ['🕌', 'মাসআলা', 'Fard rules'] };
+  const ORAL_SEC = { num: ['১২৩', 'বাংলা সংখ্যা', 'Bangla numbers'], numen: ['123', 'ইংরেজি সংখ্যা', 'English numbers'], en: ['🔤', 'ইংরেজি', 'English'], bn: ['অ', 'বাংলা', 'Bangla'], ar: ['ا', 'আরবি', 'Arabic'], dua: ['🤲', 'দোয়া-কালাম', 'Duas'], masala: ['🕌', 'মাসআলা', 'Fard rules'] };
   const markIcon = (o) => (!o ? '⚪' : o.s === 2 ? '✅' : o.s === 1 ? '🟡' : '❌');
   screens.oral = (p) => {
     const tot = ORAL.length * 2; const got = ORAL.reduce((a, x) => a + (S.oral[x.id] ? S.oral[x.id].s : 0), 0);
@@ -1030,7 +1030,7 @@
     if (x.ref === 'seq') {
       const set = x.sec;
       helper = `<button class="btn sec2 block" onclick="App.oralRef()">${st.ref ? '🙈 ' + L('উত্তর লুকাও', 'Hide answer') : '👀 ' + L('উত্তর দেখুন (বাবা/মা)', 'Show answer (parent)')}</button>
-        ${st.ref ? `<div class="grid ${set === 'num' || set === 'en' ? '' : 'c4'}" style="margin-top:10px">${itemsOf(set).map((it) => `<div class="cell ${set === 'ar' ? 'ar' : ''}" style="font-size:${set === 'ar' ? 32 : 24}px">${disp(set, it)}</div>`).join('')}</div>` : ''}`;
+        ${st.ref ? `<div class="grid ${isNum(set) || set === 'en' ? '' : 'c4'}" style="margin-top:10px">${itemsOf(set).map((it) => `<div class="cell ${set === 'ar' ? 'ar' : ''}" style="font-size:${set === 'ar' ? 32 : 24}px">${disp(set, it)}</div>`).join('')}</div>` : ''}`;
     } else if (x.flash) {
       helper = `<button class="btn sun block" onclick="App.go('flash',{set:'${x.flash}',words:${!!x.words},oral:'${x.id}'})">🃏 ${L('এলোমেলো কার্ড দেখাও (১০টি)', 'Show 10 random cards')}</button>`;
     } else if (x.rhyme) {
@@ -1098,8 +1098,6 @@
           <div class="mute">${L(`আজ রুটিনের ${N(dayIndex())} নম্বর দিন।`, `Today is day ${dayIndex()}.`)}</div></div>
         <div class="field"><label>${L('অ্যাপের ভাষা', 'App language')}</label>
           <div class="seg"><button class="${S.lang === 'bn' ? 'on' : ''}" onclick="App.setLang('bn')">বাংলা</button><button class="${S.lang === 'en' ? 'on' : ''}" onclick="App.setLang('en')">English</button></div></div>
-        <div class="field"><label>${L('সংখ্যা কীভাবে দেখাবে', 'Show numbers as')}</label>
-          <div class="seg"><button class="${S.digits === 'en' ? 'on' : ''}" onclick="App.setDigits('en')">1 2 3</button><button class="${S.digits === 'bn' ? 'on' : ''}" onclick="App.setDigits('bn')">১ ২ ৩</button></div></div>
         <div class="field"><label>${L('পড়ে শোনানোর গতি', 'Speech speed')}</label>
           <div class="seg">${[[0.6, L('খুব ধীরে', 'Very slow')], [0.8, L('ধীরে', 'Slow')], [1, L('স্বাভাবিক', 'Normal')]].map(([v, t]) => `<button class="${S.rate === v ? 'on' : ''}" onclick="App.setRate(${v})">${t}</button>`).join('')}</div></div>
       </div>
@@ -1294,7 +1292,6 @@
     flashToOral(s) { const c = cur(); S.oral[c.p.oral] = { s, d: todayStr() }; save(); back(); },
     // সেটিংস
     setLang(l) { S.lang = l; save(); render(); },
-    setDigits(d) { S.digits = d; save(); render(); },
     setRate(r) { S.rate = r; save(); render(); Speech.speak([{ t: L('এক দুই তিন', 'one two three'), l: S.lang === 'en' ? 'en' : 'bn' }]); },
     setName(v) { S.name = v.trim().slice(0, 30); save(); },
     setStart(v) { if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { S.start = v; save(); render(); } },

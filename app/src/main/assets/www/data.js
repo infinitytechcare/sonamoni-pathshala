@@ -26,6 +26,10 @@
       say: [{ t: w, l: 'bn' }], sayEn: [{ t: numEn(n), l: 'en' }], emoji: NUM_EMOJI[i % 10] };
   });
 
+  // ইংরেজি অঙ্ক 1–50 (আলাদা পরীক্ষা) — ইংরেজিতে উচ্চারণ: one, two…
+  const numen = num.map((x) => ({ g: x.g, bnDigit: x.bnDigit, name: x.en, bnName: x.name, en: x.en, n: x.n,
+    say: [{ t: x.en, l: 'en' }], emoji: x.emoji }));
+
   // ---------------- English A–Z ----------------
   const EN = [
     ['A', [['Apple', 'আপেল', '🍎'], ['Ant', 'পিঁপড়া', '🐜']]],
@@ -171,6 +175,8 @@
         'সাত আট — শিখি পাঠ,',
         'নয় দশ — খেজুরের রস!',
       ] },
+    ],
+    numen: [
       { title: 'One, two, buckle my shoe', lang: 'en', note: 'পুরোনো ইংরেজি ছড়া', lines: [
         'One, two, buckle my shoe;',
         'Three, four, knock at the door;',
@@ -444,19 +450,22 @@
     [ { t: 'learn', set: 'num', r: [40, 49] }, { t: 'learn', set: 'en', r: [20, 25] }, { t: 'learn', set: 'bn', r: [21, 25] },
       { t: 'learn', set: 'ar', r: [20, 24] }, { t: 'dua', id: 'fatiha', lines: [0, 3] }, { t: 'rhyme', set: 'en' } ],
     [ { t: 'quiz', set: 'num', r: [0, 49] }, { t: 'words', set: 'en', r: [0, 12] }, { t: 'learn', set: 'bn', r: [26, 30] },
-      { t: 'learn', set: 'ar', r: [25, 28] }, { t: 'dua', id: 'fatiha', lines: [4, 5] }, { t: 'masala', id: 'gosol' } ],
+      { t: 'learn', set: 'ar', r: [25, 28] }, { t: 'dua', id: 'fatiha', lines: [4, 5] }, { t: 'masala', id: 'gosol' },
+      { t: 'learn', set: 'numen', r: [0, 9] } ],
     [ { t: 'write', set: 'num', r: [0, 24] }, { t: 'words', set: 'en', r: [13, 25] }, { t: 'learn', set: 'bn', r: [31, 35] },
-      { t: 'quiz', set: 'ar', r: [0, 28] }, { t: 'dua', id: 'fatiha', lines: [6, 7] }, { t: 'rhyme', set: 'bn' } ],
+      { t: 'quiz', set: 'ar', r: [0, 28] }, { t: 'dua', id: 'fatiha', lines: [6, 7] }, { t: 'rhyme', set: 'bn' },
+      { t: 'learn', set: 'numen', r: [10, 19] } ],
     [ { t: 'write', set: 'en', r: [0, 25] }, { t: 'learn', set: 'bn', r: [36, 42] }, { t: 'words', set: 'bn', r: [0, 24] },
-      { t: 'dua', id: 'kalima_shahadat' }, { t: 'masala', id: 'namaz', part: 'outer' } ],
+      { t: 'dua', id: 'kalima_shahadat' }, { t: 'masala', id: 'namaz', part: 'outer' }, { t: 'learn', set: 'numen', r: [20, 29] } ],
     [ { t: 'write', set: 'num', r: [25, 49] }, { t: 'learn', set: 'bn', r: [43, 49] }, { t: 'words', set: 'bn', r: [25, 49] },
-      { t: 'dua', id: 'kalima_tawhid' }, { t: 'masala', id: 'namaz', part: 'inner' }, { t: 'rhyme', set: 'ar' } ],
+      { t: 'dua', id: 'kalima_tawhid' }, { t: 'masala', id: 'namaz', part: 'inner' }, { t: 'rhyme', set: 'ar' },
+      { t: 'learn', set: 'numen', r: [30, 39] } ],
     [ { t: 'quiz', set: 'bn', r: [0, 49] }, { t: 'write', set: 'bn', r: [0, 10] }, { t: 'words', set: 'ar', r: [0, 28] },
-      { t: 'dua', id: 'fatiha' }, { t: 'masala', id: 'all' } ],
+      { t: 'dua', id: 'fatiha' }, { t: 'masala', id: 'all' }, { t: 'learn', set: 'numen', r: [40, 49] } ],
     [ { t: 'write', set: 'bn', r: [11, 30] }, { t: 'quiz', set: 'en', r: [0, 25] }, { t: 'write', set: 'ar', r: [0, 14] },
-      { t: 'dua', id: 'all' }, { t: 'rhyme', set: 'num' } ],
-    [ { t: 'write', set: 'bn', r: [31, 49] }, { t: 'write', set: 'ar', r: [15, 28] }, { t: 'weak' }, { t: 'test' } ],
-    [ { t: 'weak' }, { t: 'test' }, { t: 'oral' } ],
+      { t: 'dua', id: 'all' }, { t: 'quiz', set: 'numen', r: [0, 49] }, { t: 'rhyme', set: 'numen' } ],
+    [ { t: 'write', set: 'bn', r: [31, 49] }, { t: 'write', set: 'ar', r: [15, 28] }, { t: 'write', set: 'numen', r: [0, 24] }, { t: 'weak' }, { t: 'test' } ],
+    [ { t: 'write', set: 'numen', r: [25, 49] }, { t: 'weak' }, { t: 'test' }, { t: 'oral' } ],
     [ { t: 'weak' }, { t: 'test' }, { t: 'oral' } ],
     [ { t: 'test' }, { t: 'oral' } ],
   ];
@@ -464,7 +473,8 @@
   window.DATA = {
     toBn,
     sets: {
-      num: { id: 'num', icon: '🔢', title: 'সংখ্যা ১–৫০', en: 'Numbers 1–50', items: num, chunk: 10 },
+      num: { id: 'num', icon: '১২৩', title: 'বাংলা সংখ্যা ১–৫০', en: 'Bangla numbers ১–৫০', items: num, chunk: 10 },
+      numen: { id: 'numen', icon: '123', title: 'ইংরেজি সংখ্যা 1–50', en: 'English numbers 1–50', items: numen, chunk: 10 },
       en: { id: 'en', icon: '🔤', title: 'ইংরেজি A–Z', en: 'English A–Z', items: en, chunk: 5 },
       bn: { id: 'bn', icon: 'অ', title: 'বাংলা বর্ণমালা', en: 'Bangla letters', items: bn, chunk: 6,
         groups: [{ t: 'স্বরবর্ণ', r: [0, 10] }, { t: 'ব্যঞ্জনবর্ণ', r: [11, 49] }] },

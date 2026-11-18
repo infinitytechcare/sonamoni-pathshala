@@ -15,7 +15,7 @@ let errors = 0;
 const fail = (m) => { console.error('✗ ' + m); errors++; };
 const ok = (m) => console.log('✓ ' + m);
 
-const expect = { num: 50, en: 26, bn: 50, ar: 29 };
+const expect = { num: 50, numen: 50, en: 26, bn: 50, ar: 29 };
 for (const [k, n] of Object.entries(expect)) {
   const items = D.sets[k].items;
   if (items.length !== n) fail(`${k}: ${n}টি থাকার কথা, আছে ${items.length}টি`);
@@ -35,6 +35,8 @@ D.sets.num.items.forEach((it, i) => { if (it.n !== i + 1) fail(`সংখ্য�
   const n = j === 0 ? 1 : j * 10;
   if (D.sets.num.items[n - 1].name !== w) fail(`${n} এর নাম ${w} হওয়ার কথা`);
 });
+if (D.sets.numen.items[36].name !== 'thirty-seven' || D.sets.numen.items[36].say[0].l !== 'en') fail('ইংরেজি সংখ্যার সেট ভুল');
+if (D.sets.num.items[36].bnDigit !== '৩৭' || D.sets.num.items[36].say[0].l !== 'bn') fail('বাংলা সংখ্যার সেট ভুল');
 if (D.sets.num.items[49].en !== 'fifty' || D.sets.num.items[36].en !== 'thirty-seven') fail('ইংরেজি সংখ্যার নাম ভুল');
 
 // বাংলা ক্রম
@@ -79,7 +81,7 @@ ok('মাসআলা: ওজু ৪, গোসল ৩, নামাজ ১৩'
 
 // রুটিন
 if (D.plan.length !== 15) fail('রুটিন ১৫ দিনের হওয়ার কথা');
-const covered = { num: new Set(), en: new Set(), bn: new Set(), ar: new Set() };
+const covered = { num: new Set(), numen: new Set(), en: new Set(), bn: new Set(), ar: new Set() };
 D.plan.forEach((day, di) => day.forEach((t) => {
   if (t.set) {
     const n = D.sets[t.set].items.length;

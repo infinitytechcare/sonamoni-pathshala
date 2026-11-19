@@ -244,3 +244,6 @@ button { font-family: inherit; font-size: inherit; color: inherit; border: 0; ba
 
 .banner { background: #fff1d1; border-radius: 16px; padding: 12px; margin-bottom: 12px; font-size: 15px; color: #6b4a00; }
 .banner .btn { margin-top: 8px; }
+
+/* বর্ণের ছড়া (শেখার কার্ডে) */
+.rhy { margin-top: 12px; background: #fff6dd; border-radius: 16px; padding: 10px 12px; font-size: 18px; font-weight: 600; color: #5b4300; line-height: 1.6; text-align: center; }

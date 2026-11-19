@@ -12,8 +12,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // প্রতি রিলিজে versionCode অবশ্যই বাড়াতে হবে, নইলে আপডেট ইনস্টল হবে না
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     // স্থায়ী চাবি: CI-তে GitHub Secret থেকে আসে (আদেশ-নিষেধের আয়াত অ্যাপের একই চাবি)।

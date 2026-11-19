@@ -405,12 +405,15 @@
         <div class="words">${it.words.map((w) => `<div class="word"><span class="e">${w.e}</span><b class="en">${w.w}</b><small>${w.m}</small></div>`).join('')}</div>
         <div class="gsub" style="margin-top:8px">${it.g} for ${it.words[0].w}, ${it.g} for ${it.words[1].w}</div>`;
     } else if (set === 'bn') {
+      const w = it.words[0];
       body = `<div class="glyph">${it.g}</div><div class="gname">${it.name}</div><div class="gsub">${it.kind}</div>
-        <div class="words">${it.words.map((w) => `<div class="word"><span class="e">${w.e}</span><b>${w.w}</b></div>`).join('')}</div>`;
+        <div class="words one"><div class="word"><span class="e">${w.e}</span><b>${it.head}</b></div></div>
+        ${it.rhyme ? `<div class="rhy">🎵 ${it.rhyme}</div>` : ''}`;
     } else {
       const w = it.words[0];
       body = `<div class="glyph ar">${it.g}</div><div class="gname">${it.name}</div><div class="gsub ar">${it.arName}</div>
-        <div class="words one"><div class="word"><span class="e">${w.e}</span><span class="ar">${w.w}</span><b>${w.p}</b><small>${L('অর্থ', 'meaning')}: ${w.m}</small></div></div>`;
+        <div class="words one"><div class="word"><span class="e">${w.e}</span><span class="ar">${w.w}</span><b>${it.head || w.p}</b><small>${L('অর্থ', 'meaning')}: ${w.m}</small></div></div>
+        ${it.rhyme ? `<div class="rhy">🎵 ${it.rhyme}</div>` : ''}`;
     }
     return `<div class="lcard pop"><button class="speak" onclick="App.sayItem('${set}',${i},1)">🔊</button>${body}</div>`;
   }
@@ -419,8 +422,12 @@
     const base = sayOf(set, it);
     if (set === 'en') return base.concat([{ t: `${it.g} for ${it.words[0].w}`, l: 'en' }, { t: it.words[0].m, l: 'bn' },
       { t: `${it.g} for ${it.words[1].w}`, l: 'en' }, { t: it.words[1].m, l: 'bn' }]);
-    if (set === 'bn') return base.concat([{ t: `${it.g}-তে ${it.words[0].w.replace(/\s*\(.*\)/, '')}`, l: 'bn' }]);
-    if (set === 'ar' && Speech.status('ar') === 1) return base.concat([{ t: it.words[0].w, l: 'ar' }, { t: it.words[0].m, l: 'bn' }]);
+    if (set === 'bn') return base.concat([{ t: it.head || `${it.g}-তে ${it.words[0].w}`, l: 'bn' }].concat(it.rhyme ? [{ t: it.rhyme, l: 'bn' }] : []));
+    if (set === 'ar') {
+      const w = it.words[0];
+      return base.concat(Speech.status('ar') === 1 ? [{ t: w.w, l: 'ar' }] : [])
+        .concat([{ t: `${it.head || w.p}, মানে ${w.m}`, l: 'bn' }]).concat(it.rhyme ? [{ t: it.rhyme, l: 'bn' }] : []);
+    }
     return base;
   }
   screens.learn = (p, st, c) => {
@@ -788,9 +795,10 @@
   // ছড়া
   // =====================================================================
   function rhymeLines(set, rh) {
+    if (rh.fromItems) return itemsOf(set).slice(rh.fromItems[0], rh.fromItems[1] + 1).map((it) => ({ t: `${it.head} — ${it.rhyme}`, l: 'bn' }));
     if (!rh.fromWords) return rh.lines.map((t) => ({ t, l: rh.lang }));
     if (set === 'en') return itemsOf('en').map((it) => ({ t: `${it.g} for ${it.words[0].w}, ${it.g} for ${it.words[1].w}`, l: 'en' }));
-    return itemsOf('bn').map((it) => ({ t: `${it.g}-তে ${it.words[0].w.replace(/\s*\(.*\)/, '')}, ${it.words[1].w.replace(/\s*\(.*\)/, '')}`, l: 'bn' }));
+    return itemsOf(set).map((it) => ({ t: it.head || `${it.g}-তে ${it.words[0].w}`, l: 'bn' }));
   }
   screens.rhyme = (p, st) => {
     const set = p.set; const list = D.rhymes[set];
@@ -1001,11 +1009,13 @@
     { id: 'bn_seq', sec: 'bn', t: 'অ থেকে চন্দ্রবিন্দু (ঁ) পর্যন্ত সোজা বলো', en: 'Say অ to ঁ in order', ref: 'seq' },
     { id: 'bn_write', sec: 'bn', t: 'খাতায় অ থেকে ঁ মুখস্থ লেখো', en: 'Write the letters on paper', ref: 'seq' },
     { id: 'bn_rand', sec: 'bn', t: 'এলোমেলো বর্ণ চিনে বলো', en: 'Read random letters', flash: 'bn' },
-    { id: 'bn_words', sec: 'bn', t: 'বর্ণ দেখে শব্দ বলো (অ-তে অজগর)', en: 'Say a word for each letter', flash: 'bn', words: true },
+    { id: 'bn_words', sec: 'bn', t: 'বর্ণ দেখে শব্দ বলো (অ-তে অজু)', en: 'Say the word for each letter', flash: 'bn', words: true },
     { id: 'bn_rhyme', sec: 'bn', t: 'বর্ণের ছড়া বলো', en: 'Say the letter rhyme', rhyme: 'bn' },
     { id: 'ar_seq', sec: 'ar', t: 'আলিফ থেকে ইয়া পর্যন্ত সোজা বলো', en: 'Say Alif to Ya', ref: 'seq' },
     { id: 'ar_write', sec: 'ar', t: 'খাতায় আলিফ থেকে ইয়া লেখো', en: 'Write Alif–Ya on paper', ref: 'seq' },
     { id: 'ar_rand', sec: 'ar', t: 'এলোমেলো হরফ চিনে বলো', en: 'Read random letters', flash: 'ar' },
+    { id: 'ar_words', sec: 'ar', t: 'হরফ দেখে শব্দ ও অর্থ বলো (আলিফে আল্লাহ)', en: 'Say the word and meaning for each letter', flash: 'ar', words: true },
+    { id: 'ar_rhyme', sec: 'ar', t: 'হরফের ছড়া বলো', en: 'Say the letter rhyme', rhyme: 'ar' },
   ].concat(D.duas.map((d) => ({ id: 'dua_' + d.id, sec: 'dua', t: `${d.title} মুখস্থ বলো`, en: `Recite ${d.en}`, dua: d.id })))
     .concat(D.masala.map((m) => ({ id: 'm_' + m.id, sec: 'masala', t: `${m.title} কয়টি ও কী কী বলো`, en: `${m.en}: how many and what`, masala: m.id })));
   const ORAL_SEC = { num: ['১২৩', 'বাংলা সংখ্যা', 'Bangla numbers'], numen: ['123', 'ইংরেজি সংখ্যা', 'English numbers'], en: ['🔤', 'ইংরেজি', 'English'], bn: ['অ', 'বাংলা', 'Bangla'], ar: ['ا', 'আরবি', 'Arabic'], dua: ['🤲', 'দোয়া-কালাম', 'Duas'], masala: ['🕌', 'মাসআলা', 'Fard rules'] };
@@ -1073,7 +1083,8 @@
       </div></div>`;
     }
     const i = st.list[st.k]; const it = itemsOf(set)[i];
-    const ans = p.words && it.words ? it.words.map((w) => `${w.e} ${w.w}${w.m ? ' — ' + w.m : ''}`).join('<br>') : `${nameOf(set, it)}`;
+    let ans = p.words && it.words ? it.words.map((w) => `${w.e} ${set === 'ar' ? w.p : w.w}${w.m ? ' — ' + w.m : ''}`).join('<br>') : `${nameOf(set, it)}`;
+    if (p.words && it.rhyme) ans += `<div class="rhy">🎵 ${it.rhyme}</div>`;
     return `${topbar(L('এলোমেলো কার্ড', 'Flash cards'))}
     <div class="page">
       <p class="mute center">${p.words ? L('বাবু এই অক্ষর দিয়ে শব্দ ও অর্থ বলবে', 'Child says words for this letter') : L('বাবু দেখে নামটা বলবে', 'Child names it')} • ${N(st.k + 1)}/${N(st.list.length)}</p>

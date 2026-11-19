@@ -56,7 +56,12 @@ D.sets.en.items.forEach((it) => {
     if (it.g !== 'X' && w.w[0] !== it.g) fail(`${w.w} "${it.g}" দিয়ে শুরু হয়নি`);
   });
 });
-D.sets.bn.items.forEach((it) => { if (it.words.length !== 2) fail(`${it.g}: ২টি শব্দ থাকার কথা`); });
+['bn', 'ar'].forEach((k) => D.sets[k].items.forEach((it) => {
+  if (!it.words.length || !it.words[0].w || !it.words[0].e) fail(`${k} ${it.g}: শব্দ/ছবি নেই`);
+  if (!it.rhyme || !it.head) fail(`${k} ${it.g}: ছড়া নেই`);
+}));
+D.sets.ar.items.forEach((it) => { if (!it.words[0].m || !it.words[0].p) fail(`ar ${it.g}: অর্থ/উচ্চারণ নেই`); });
+ok('বাংলা ৫০টি ও আরবি ২৯টি বর্ণের ছড়া ও শব্দ আছে');
 
 // দোয়া
 const duaIds = new Set(D.duas.map((d) => d.id));

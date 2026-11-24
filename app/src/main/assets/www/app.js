@@ -915,7 +915,7 @@
           <div><div style="font-size:30px;font-weight:700;color:var(--brand)">${N(score.present)}/${N(score.schoolDays)}</div><div class="mute">${L('স্কুলে উপস্থিত', 'At school')}</div></div>
         </div></div>
       <div class="sec">✅ ${day === todayStr() ? L('আজ', 'Today') : day} — ${L('বাবা/মা টিক দিন', 'parent ticks')}</div>
-      <div class="card">${D.clean.map((it) => `<button class="ck ${c[it.id] ? 'on' : ''}" onclick="App.cleanTick('${it.id}')"><span class="e">${it.e}</span>${L(it.t, it.en)}<span class="box">${c[it.id] ? '✓' : ''}</span></button>`).join('')}</div>
+      <div class="card">${D.clean.map((it) => `<button class="ck ${c[it.id] ? 'on' : ''}" onclick="App.cleanTick('${it.id}')"><span class="e">${it.e}</span><span class="grow">${L(it.t, it.en)}${it.tip ? `<small class="cktip">${L(it.tip, it.tipEn)}</small>` : ''}</span><span class="box">${c[it.id] ? '✓' : ''}</span></button>`).join('')}</div>
       <div class="sec">🏫 ${L('আজ স্কুলে গিয়েছে?', 'Went to school today?')}</div>
       <div class="seg">
         <button class="${c.school === 'yes' ? 'on' : ''}" onclick="App.cleanSchool('yes')">🏫 ${L('হ্যাঁ', 'Yes')}</button>

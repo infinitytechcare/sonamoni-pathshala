@@ -396,7 +396,12 @@
 
   // ---------------- পরিচ্ছন্নতা ও স্কুল (বাবা-মা টিক দেবেন) ----------------
   const clean = [
-    { id: 'teeth', e: '🪥', t: 'দাঁত মেজেছে', en: 'Brushed teeth' },
+    // সকালের ব্রাশ: ডেন্টিস্টদের পরামর্শ — নাশতার আগে (রাতের জমা জীবাণু দূর হয়, ফ্লুরাইড দাঁত রক্ষা করে)।
+    // নাশতার পরে মাজলে অন্তত ৩০ মিনিট অপেক্ষা করা ভালো। (id 'teeth' রাখা হলো, যাতে আগের টিক হারিয়ে না যায়)
+    { id: 'teeth', e: '🪥', t: 'সকালে উঠে নাশতার আগে দাঁত মেজেছে', en: 'Brushed in the morning, before breakfast',
+      tip: 'নাশতার পরে মাজলে খাওয়ার অন্তত ৩০ মিনিট পরে', tipEn: 'If after breakfast, wait at least 30 minutes' },
+    { id: 'teeth_night', e: '🌙', t: 'রাতে খাওয়ার পরে, ঘুমের আগে দাঁত মেজেছে', en: 'Brushed at night after dinner, before sleep',
+      tip: 'ব্রাশের পরে আর কিছু খাবে না, শুধু পানি', tipEn: 'Nothing but water after brushing' },
     { id: 'bath', e: '🛁', t: 'গোসল / হাত-মুখ ধুয়েছে', en: 'Bathed / washed' },
     { id: 'nails', e: '✂️', t: 'নখ ছোট ও পরিষ্কার', en: 'Nails short and clean' },
     { id: 'clothes', e: '👕', t: 'পরিষ্কার জামা পরেছে', en: 'Clean clothes' },
